@@ -1,4 +1,4 @@
-# EXLpicoCART — cartouche multi-jeux pour Exelvision EXL100 / EXELTEL sur Raspberry Pi Pico
+# EXELpicoCART — cartouche multi-jeux pour Exelvision EXL100 / EXELTEL sur Raspberry Pi Pico
 
 EXLCART remplace l'EPROM d'une cartouche EXL100 par un **Raspberry Pi Pico (RP2040)**. Le Pico répond au bus de la console exactement comme une EPROM de 32 Ko, et peut servir :
 
