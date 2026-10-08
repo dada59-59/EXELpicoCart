@@ -474,3 +474,8 @@ En cas de doute, la sonde reste l'outil de référence : elle dit quel mode est 
 ---
 
 ## 10. Limites et pistes
+
+- **Jeux de 32 Ko au maximum**, sans changement de banque. Le RP2040 a assez de RAM (264 Ko) pour en ajouter un dans le firmware plus tard.
+- **Lecture seule** : pas d'émulation de RAM de cartouche.
+- **190 jeux** au maximum : c'est la limite de la liste de la zone `$7000–$7EFF` et du signal `$6F00 + n`.
+- Les jeux démarrent dans l'état laissé par le menu ([§7.5](#75-démarrage-des-jeux--pourquoi-pas-trap-0)). Si un jeu en dépendait, un reset après la sélection le lance à froid.
