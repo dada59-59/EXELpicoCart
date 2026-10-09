@@ -67,7 +67,7 @@ Les quatre firmwares précompilés sont **ceux qui sont intégrés dans `exlpico
 
 ### Carte
 
-Il faut une carte RP2040 qui **sort la broche GP23** : c'est elle qui reçoit `/ROM_CS`. Sur le Raspberry Pi Pico officiel, GP23 n'est pas accessible (elle pilote son alimentation). La carte utilisée est un **« Purple Pico » YD-RP2040, 16 Mo de flash**. Sur cette carte, GP23 commande aussi la LED RGB : elle change parfois de couleur pendant le jeu, sans aucune conséquence.
+Il faut une carte RP2040 qui **sort la broche GP23** : c'est elle qui reçoit `/ROM_CS`. Sur le Raspberry Pi Pico officiel, GP23 n'est pas accessible (elle pilote son alimentation). La carte utilisée est un **« Purple Pico » YD-RP2040, 16 Mo de flash**. 
 
 Le mode bibliothèque range les jeux **à partir de 2 Mo** dans la flash : il faut une carte d'au moins 4 Mo. Avec 16 Mo, les 190 jeux tiennent largement (ils s'arrêtent vers 8 Mo).
 
