@@ -3,12 +3,13 @@
 EXLCART remplace l'EPROM d'une cartouche EXL100 par un **Raspberry Pi Pico (RP2040)**. Le Pico répond au bus de la console exactement comme une EPROM de 32 Ko, et peut servir :
 
 - **une ROM unique**, comme une cartouche classique ;
-- **une bibliothèque** : un menu au démarrage, jusqu'à **190 jeux**, lancement par les flèches et ENTRÉE, retour au menu par **reset**.
+- **une bibliothèque** : un menu au démarrage, jusqu'à **190 jeux**, lancement par les flèches et ENTRÉE, retour au menu par **reset** ;
+- **une ROM à banques** : une zone fixe de 16 Ko et des banques de 16 Ko que le programme fait défiler en `$4000–$7FFF`, pour les jeux de plus de 32 Ko (voir [§5](#5-les-rom-à-banques-plus-de-32-ko)).
 
 Deux cartes sont prises en charge, avec la même vitesse de service, et toutes deux validées sur **EXL100** et **EXELTEL** :
 
 - la carte **linéaire** d'origine, testée avec 19 ROM, dont Exelnoid et Exeltris ;
-- la carte **support EPROM**, où le Pico est soudé presque directement sur l'empreinte d'une 27C256 (voir [§2](#2-matériel-et-câblage)). Elle a fonctionné du premier coup, et la sonde mesure le même temps de réponse que sur la carte linéaire (voir [§7.7](#77-la-carte-support-eprom--même-vitesse)).
+- la carte **support EPROM**, où le Pico est soudé presque directement sur l'empreinte d'une 27C256 (voir [§2](#2-matériel-et-câblage)). Elle a fonctionné du premier coup, et la sonde mesure le même temps de réponse que sur la carte linéaire (voir [§8.7](#87-la-carte-support-eprom--même-vitesse)).
 
 Aucune ROM n'est compilée dans le firmware : les jeux sont rangés dans la flash du Pico par des fichiers `.uf2` produits par l'outil web **EXLPICO**. Changer de jeu ou de bibliothèque ne demande jamais de recompiler.
 
@@ -20,12 +21,13 @@ Aucune ROM n'est compilée dans le firmware : les jeux sont rangés dans la flas
 2. [Matériel et câblage](#2-matériel-et-câblage)
 3. [Démarrage rapide](#3-démarrage-rapide)
 4. [Le loader EXLMENU](#4-le-loader-exlmenu)
-5. [L'outil EXLPICO](#5-loutil-exlpico)
-6. [Compiler le firmware du Pico](#6-compiler-le-firmware-du-pico)
-7. [Fonctionnement technique](#7-fonctionnement-technique)
-8. [La sonde (diagnostic)](#8-la-sonde-diagnostic)
-9. [Dépannage](#9-dépannage)
-10. [Limites et pistes](#10-limites-et-pistes)
+5. [Les ROM à banques (plus de 32 Ko)](#5-les-rom-à-banques-plus-de-32-ko)
+6. [L'outil EXLPICO](#6-loutil-exlpico)
+7. [Compiler le firmware du Pico](#7-compiler-le-firmware-du-pico)
+8. [Fonctionnement technique](#8-fonctionnement-technique)
+9. [La sonde (diagnostic)](#9-la-sonde-diagnostic)
+10. [Dépannage](#10-dépannage)
+11. [Limites et pistes](#11-limites-et-pistes)
 
 ---
 
@@ -42,6 +44,7 @@ EXLCART/
 │   ├── exlserve.h                  service du bus, mode ROM unique
 │   ├── exllib.h                    mode bibliothèque : flash, menu, chargement des jeux
 │   ├── exlmulti.h                  machine d'états de la bibliothèque (menu / lancement / jeu)
+│   ├── exlbanks.h                  ROM à banques de 16 Ko, réserve d'images en RAM
 │   ├── exlsonde.c                  firmware sonde : cartouche + relevé des accès, lu par USB
 │   ├── exloscillo.pio              programme PIO de la sonde (« oscilloscope » 20 ns)
 │   ├── test_multi.c                test sur PC de la machine d'états (gcc)
@@ -53,6 +56,9 @@ EXLCART/
 │       └── firmware_seul_exlsonde_eprom_SANS_ROM.uf2   sonde, carte support EPROM
 ├── loader/
 │   └── exlmenu.asm                 le menu de la bibliothèque (assembleur TMS7020)
+├── exemples/
+│   ├── banktest.asm                test des banques : ROM principale (zone fixe + banque 0)
+│   └── bank1.asm                   test des banques : la banque 1
 └── outils/
     ├── exlpico.html                outil web : ROM → .uf2, bibliothèque, sonde
     └── integrer_firmware.py        intègre un firmware recompilé dans exlpico.html
@@ -102,7 +108,7 @@ Tout est branché **en direct**, sans pont diviseur ni résistance. Aucune broch
 
 GP17 et GP25 (LED bleue) restent **non connectées**. Sur la plupart des YD-RP2040, GP24 est aussi relié au bouton **USR** : ne pas l'appuyer quand la cartouche est dans la console, il mettrait A10 à la masse.
 
-Le firmware se compile pour l'une ou l'autre carte, et EXLPICO met le bon dans les fichiers qu'il produit. **Un firmware installé sur la mauvaise carte ne sert rien de cohérent** : la console ne voit alors pas de cartouche. Comment la carte support EPROM garde la même vitesse : voir [§7.7](#77-la-carte-support-eprom--même-vitesse).
+Le firmware se compile pour l'une ou l'autre carte, et EXLPICO met le bon dans les fichiers qu'il produit. **Un firmware installé sur la mauvaise carte ne sert rien de cohérent** : la console ne voit alors pas de cartouche. Comment la carte support EPROM garde la même vitesse : voir [§8.7](#87-la-carte-support-eprom--même-vitesse).
 
 Le RP2040 n'est pas officiellement tolérant au 5 V, mais ses broches numériques non-ADC le supportent en pratique. Le même choix est fait par d'autres cartouches à base de Pico (A8PicoCart pour l'Atari 8 bits). Les données 3,3 V du Pico sont lues correctement par la console : c'est vérifié à l'oscilloscope de la sonde.
 
@@ -137,6 +143,14 @@ Ouvrir `outils/exlpico.html` dans un navigateur (Chrome ou Edge recommandés : l
    - Les noms sont tirés des noms de fichiers (20 caractères, majuscules). On peut les modifier, réordonner les jeux avec ↑ ↓, en retirer avec ×, ou **Trier par nom**.
 3. **UF2 bibliothèque complète (firmware + menu + jeux)** : à utiliser après toute mise à jour du firmware ou d'EXLPICO. **UF2 bibliothèque seule** : pour changer seulement la liste des jeux.
 4. Copier sur le Pico, insérer, allumer : le menu s'affiche.
+
+### Une ROM à banques
+
+1. Carte **ROM** : choisir la ROM principale (zone fixe + banque 0).
+2. Carte **Banques de 16 Ko** : **Ajouter des banques…** ; elles prennent les numéros 1, 2, 3… dans l'ordre de la liste (↑ ↓ pour réordonner).
+3. Carte **Fichier .uf2** : **UF2 complet**, ou **UF2 ROM seule** si le firmware est déjà à jour. Le nom du fichier indique le nombre de banques (`…_2banques_firmware+rom.uf2`).
+
+Exemple complet : [§5](#5-les-rom-à-banques-plus-de-32-ko).
 
 ### Utilisation du menu
 
@@ -186,11 +200,96 @@ Donner ensuite `exlmenu.rom` à EXLPICO comme **loader**.
    ```
 4. Le jeu démarre exactement comme si la ROM interne l'avait lancé.
 
-Pourquoi ce démarrage direct plutôt qu'un `TRAP 0` : voir [§7.5](#75-démarrage-des-jeux--pourquoi-pas-trap-0).
+Pourquoi ce démarrage direct plutôt qu'un `TRAP 0` : voir [§8.5](#85-démarrage-des-jeux--pourquoi-pas-trap-0).
 
 ---
 
-## 5. L'outil EXLPICO
+## 5. Les ROM à banques (plus de 32 Ko)
+
+La console ne voit que 32 Ko de cartouche. Une ROM à banques garde son programme dans la moitié basse, et fait défiler des pages de 16 Ko dans la moitié haute. Le Pico reconnaît la demande de changement **en surveillant les adresses lues** : il n'y a ni registre ni écriture, une simple lecture suffit.
+
+### Organisation vue par la console
+
+| Adresses | Contenu |
+|---|---|
+| `$0000–$3FFF` | **zone fixe** : le programme, toujours visible |
+| `$3FF0–$3FFF` | **signal** : une lecture en `$3FF0 + n` sélectionne la banque n. **Ne rien assembler dans ces 16 octets** |
+| `$4000–$7FFF` | **fenêtre** : la banque courante, 16 Ko |
+| `$7FFC–$7FFF` | le pied : celui de la ROM principale, recopié par EXLPICO dans **chaque** banque |
+
+C'est la même convention que l'image EPROM produite par EXLBANK.
+
+- La **banque 0** est la moitié haute de la ROM principale. C'est une ROM de 32 Ko ordinaire : sans banques, elle démarre telle quelle.
+- Les **banques 1, 2…** sont des fichiers à part, ajoutés dans EXLPICO : 16 Ko bruts, ou une ROM de 32 Ko dont seule la moitié haute (`$4000–$7FFF`) est prise.
+- **Une banque assemblée avec TASM + obj2exl doit commencer par un repère en `$1000`** (`.org $1000` / `.byte $FF`, puis `.org $4000` et les données). Le binaire de TASM (`-b`) commence à la plus petite adresse assemblée, et obj2exl le pose à l'adresse donnée par `-r` : une banque qui ne contiendrait qu'un `.org $4000` serait posée en `$1000`, et sa fenêtre serait vide. EXLPICO refuse une telle banque, avec ce diagnostic. Voir `exemples/bank1.asm`.
+- Le changement a lieu **juste après** la lecture du signal : la lecture suivante de la fenêtre voit déjà la nouvelle banque.
+
+```
+        mov     %2,B
+        lda     @$3FF0(B)       ; lecture de $3FF2 : le Pico passe sur la banque 2
+        lda     @$4000          ; premier octet de la banque 2
+```
+
+Trois règles pour le programme :
+
+- **Choisir sa banque au démarrage.** Un reset de la console ne remet pas le Pico sur la banque 0 : il ne voit pas le reset, seulement les lectures. Le pied étant dans chaque banque, la console redémarre toujours, mais le programme doit lire `$3FF0 + n` avant de lire la fenêtre.
+- **Ne pas changer de banque depuis du code placé dans la fenêtre.** L'instruction suivante serait lue dans l'autre banque. Le code qui change de banque reste dans la zone fixe.
+- **Laisser `$3FF0–$3FFF` libres.** Une lecture de ces octets, même par le processeur qui exécute du code, change de banque.
+
+### Capacité
+
+Chaque banque est gardée en RAM sous forme d'image complète, ce qui permet de servir le bus exactement à la même vitesse qu'une ROM unique ([§8.8](#88-le-service-avec-banques)). La RAM du RP2040 limite donc le nombre de banques :
+
+| Firmware | Carte linéaire | Carte support EPROM |
+|---|---|---|
+| cartouche (EXLCART) | **6 banques** : 16 Ko fixes + 6 × 16 Ko = 112 Ko | **3 banques** : 64 Ko |
+| sonde (EXLSONDE) | 3 banques | 2 banques |
+
+Une banque au-delà de la capacité est ignorée : lire son signal laisse la banque courante en place. EXLPICO prévient quand la liste dépasse la capacité de la carte choisie.
+
+Les banques ne s'utilisent qu'en **ROM unique** : la bibliothèque ne les gère pas, et si une bibliothèque est installée, elle passe avant.
+
+### Exemple : BANKTEST
+
+`exemples/banktest.asm` affiche le texte lu en `$4000`, et **ESPACE** passe à la banque suivante (0, 1, 0, 1…) :
+
+| | Contenu de `$4000` |
+|---|---|
+| banque 0 (fin de `banktest.asm`) | `BONJOUR PLAGE 1` |
+| banque 1 (`bank1.asm`) | `AU REVOIR PLAGE 2` |
+
+Assembler, avec `7020.equ`, `3556.equ` et `mixt_api.asm` dans le même dossier :
+
+```
+tasm -tEXL -a -b banktest.asm
+obj2exl.exe banktest.obj banktest.rom -t:ROM -r:0x1000 -p
+tasm -tEXL -a -b bank1.asm
+obj2exl.exe bank1.obj bank1.rom -t:ROM -r:0x1000 -p
+```
+
+Puis dans EXLPICO : choisir la carte, **ROM** = `banktest.rom`, **Banques** = `bank1.rom`, **UF2 complet**. À l'écran :
+
+```
+      TEST DES BANQUES EXLCART
+
+      ESPACE : CHANGER DE BANQUE
+
+    BANQUE ACTIVE : 0
+
+    TEXTE LU EN $4000 :
+
+     BONJOUR PLAGE 1
+
+    OCTETS : 42 4F 4E 4A 4F 55 52 20
+```
+
+La ligne **OCTETS** montre les 8 premiers octets de la fenêtre en hexadécimal (`41 55 20 52 …` pour la banque 1) : `FF FF FF …` veut dire une banque vide.
+
+Au démarrage, le programme lit `$3FF0` (banque 0), puis le texte. ESPACE lit `$3FF1` : « AU REVOIR PLAGE 2 » s'affiche. ESPACE encore : retour à la banque 0. Le programme ne fait que quelques Ko : il reste loin du signal.
+
+---
+
+## 6. L'outil EXLPICO
 
 `outils/exlpico.html` est une page autonome. Toutes ses fonctions tournent dans le navigateur, sans serveur.
 
@@ -198,10 +297,11 @@ Pourquoi ce démarrage direct plutôt qu'un `TRAP 0` : voir [§7.5](#75-démarra
 |---|---|
 | **Carte (brochage)** | linéaire ou support EPROM : choisit le firmware mis dans les fichiers « complet » et « sonde » |
 | **ROM** | charge une ROM et l'analyse : organisation, pied `AA/55 8C`, point d'entrée, somme de contrôle |
+| **Banques de 16 Ko** | banques 1, 2… d'une ROM à banques (facultatif) : aperçu du début de chaque banque, capacité, contrôle de `$3FF0–$3FFF` |
 | **Réglage du service (essais)** | délai et maintien « façon EPROM ». **Laisser 0 / 0** : c'est la réponse immédiate, validée sur les deux machines |
-| **Fichier .uf2** | UF2 complet (firmware + ROM) ou UF2 ROM seule |
+| **Fichier .uf2** | UF2 complet (firmware + ROM) ou UF2 ROM seule, avec les banques s'il y en a |
 | **Bibliothèque de jeux (menu)** | loader, liste des jeux, UF2 bibliothèque complète ou seule |
-| **Sonde (diagnostic)** | UF2 sonde, lecture du relevé par USB, fichier de test de la flash (voir [§8](#8-la-sonde-diagnostic)) |
+| **Sonde (diagnostic)** | UF2 sonde, lecture du relevé par USB, fichier de test de la flash (voir [§9](#9-la-sonde-diagnostic)) |
 | **Installer sur le Pico** | rappel de la procédure |
 
 ### ROM acceptées
@@ -219,11 +319,11 @@ Deux signatures existent : **`AA 8C`** pour les cartouches officielles, **`55 8C
 
 ### Installer une ROM seule après une bibliothèque
 
-Les UF2 « ROM unique » écrivent aussi un bloc de zéros sur l'en-tête de la bibliothèque. Le firmware sert alors la ROM unique. Les jeux de la bibliothèque restent dans la flash, mais ne sont plus utilisés tant qu'une bibliothèque n'est pas réinstallée.
+Les UF2 « ROM unique » écrivent aussi un bloc de zéros sur l'en-tête de la bibliothèque (et sur celui des banques, quand la liste des banques est vide). Le firmware sert alors la ROM unique. Les jeux de la bibliothèque restent dans la flash, mais ne sont plus utilisés tant qu'une bibliothèque n'est pas réinstallée.
 
 ---
 
-## 6. Compiler le firmware du Pico
+## 7. Compiler le firmware du Pico
 
 Inutile si vous ne modifiez pas les sources : les firmwares précompilés sont dans `firmware/uf2/` et déjà intégrés dans EXLPICO.
 
@@ -274,7 +374,7 @@ Avec Ninja : `cmake -G Ninja ..` puis `ninja exlcart exlsonde exlcart_eprom exls
 
 Le brochage d'une carte est entièrement décrit dans `exlpins.h`. La variante support EPROM est compilée avec la définition `EXL_PINOUT_EPROM`.
 
-La carte cible est la carte `pico` par défaut du SDK. Elle convient au Purple Pico 16 Mo : son chargeur de démarrage (boot2 W25Q080) fonctionne avec la puce de cette carte, et l'accès à la flash au-delà de 2 Mo est vérifié (test de la flash, [§8](#8-la-sonde-diagnostic)).
+La carte cible est la carte `pico` par défaut du SDK. Elle convient au Purple Pico 16 Mo : son chargeur de démarrage (boot2 W25Q080) fonctionne avec la puce de cette carte, et l'accès à la flash au-delà de 2 Mo est vérifié (test de la flash, [§9](#9-la-sonde-diagnostic)).
 
 Les cibles `exlcart_test` et `exlcart_eprom_test` sont des variantes à un seul cœur, réservées aux essais en émulateur (rp2040js). Elles ne sont pas faites pour la console.
 
@@ -307,33 +407,37 @@ gcc -O2 -Wall -DEXL_PINOUT_EPROM -o test_pins_eprom test_pins.c && ./test_pins_e
 
 ---
 
-## 7. Fonctionnement technique
+## 8. Fonctionnement technique
 
-### 7.1 Carte de la flash du Pico
+### 8.1 Carte de la flash du Pico
 
 | Adresse flash | Contenu |
 |---|---|
 | `0x000000` | firmware (environ 12 Ko pour la cartouche, 37 Ko pour la sonde) |
 | `0x100000` | ROM unique (32 Ko) |
 | `0x108000` | bloc de réglages `EXLC` (délai, maintien) |
+| `0x10F000` | en-tête des banques `EXLK` |
+| `0x110000 + (k − 1) × 0x4000` | la banque k (k = 1 à 15), 16 Ko |
 | `0x180000` | relevé de la sonde (64 Ko) |
 | `0x200000` | en-tête de bibliothèque `EXLB`, puis à +256 la liste des jeux (3 840 octets) |
 | `0x201000` | le menu (loader), 32 Ko |
 | `0x209000 + n × 0x8000` | le jeu n (n = 0 à 189) |
 
+En-tête des banques, petit-boutiste : signature `EXLK` (`0x4B4C5845`), version 1 (16 bits), nombre de banques **y compris la banque 0** (16 bits, 2 à 16).
+
 En-tête de bibliothèque, petit-boutiste : signature `EXLB` (`0x424C5845`), version (16 bits), nombre de jeux (16 bits), puis les décalages du menu, du premier jeu, et le pas entre deux jeux (32 bits chacun).
 
-### 7.2 Les fichiers UF2 sont écrits secteur par secteur
+### 8.2 Les fichiers UF2 sont écrits secteur par secteur
 
 La ROM de démarrage du RP2040 efface la flash par secteurs de 4 Ko, et elle choisit le secteur à effacer d'après le **numéro du bloc** dans le fichier UF2, pas d'après son adresse. Un fichier qui mélange plusieurs zones non alignées voit donc certaines de ses données effacées par le bloc suivant. EXLPICO émet donc toujours des **secteurs complets** de 16 blocs de 256 octets, complétés par `FF`. Si vous fabriquez vos propres UF2, respectez cette règle.
 
-### 7.3 Le service du bus
+### 8.3 Le service du bus
 
 La console met `/ROM_CS` à 0 pendant environ **400 ns** par accès, et lit l'octet environ **150 ns** après le début. Mesures faites avec la sonde :
 
 | Boucle | Octet sur le bus après le début de l'accès |
 |---|---|
-| ROM unique, et bibliothèque actuelle | **~105 ns** : fonctionne |
+| ROM unique, ROM à banques, et bibliothèque actuelle | **~105 ns** : fonctionne |
 | première version de la bibliothèque (contrôles d'état **avant** l'octet) | 205–265 ns : la console ne reconnaît pas le pied |
 
 La boucle de service tourne en RAM, à 200 MHz, interruptions coupées :
@@ -344,7 +448,7 @@ La boucle de service tourne en RAM, à 200 MHz, interruptions coupées :
 
 En mode bibliothèque, le **cœur 1** sert le bus en permanence, et le **cœur 0** copie le jeu choisi de la flash vers la RAM. Le cœur 1 ne lit jamais la flash : le chargement ne ralentit donc pas le service.
 
-### 7.4 La machine d'états de la bibliothèque
+### 8.4 La machine d'états de la bibliothèque
 
 | État | Image servie | Passage à l'état suivant |
 |---|---|---|
@@ -358,7 +462,7 @@ Les adresses de signal ne sont actives que dans l'état concerné. Un jeu peut d
 - Dès que le jeu est chargé, le cœur 0 écrit **sa** signature (`AA` ou `55`) dans le pied du menu. Si la console redémarre, elle lit donc la signature du jeu.
 - Pendant la partie, la signature **du menu** est écrite dans le pied du jeu. Après un reset, la console lit donc celle du menu.
 
-### 7.5 Démarrage des jeux : pourquoi pas TRAP 0
+### 8.5 Démarrage des jeux : pourquoi pas TRAP 0
 
 Le pied d'une cartouche est une **instruction** : `55 8C 10 00`, c'est la signature `55` suivie de `8C 10 00`, soit `BR @$1000`. Au démarrage, la ROM interne vérifie la signature en `$7FFC`, puis exécute l'instruction en `$7FFD`.
 
@@ -366,11 +470,11 @@ Le pied d'une cartouche est une **instruction** : `55 8C 10 00`, c'est la signat
 
 Conséquence : le jeu démarre dans l'état laissé par le menu (mode vidéo, police, interruptions actives), et non dans celui d'un démarrage à froid. Les jeux qui initialisent eux-mêmes leur affichage n'y voient aucune différence. Les 19 ROM testées démarrent ainsi.
 
-### 7.6 Mode ROM unique
+### 8.6 Mode ROM unique
 
-Sans en-tête `EXLB` valide à 2 Mo, le firmware copie la ROM rangée à 1 Mo en RAM, puis la sert avec la boucle rapide, sur le cœur 0. Les réglages délai et maintien (bloc `EXLC`) ne servent qu'aux essais.
+Sans en-tête `EXLB` valide à 2 Mo, le firmware copie la ROM rangée à 1 Mo en RAM, puis la sert avec la boucle rapide, sur le cœur 0. S'il trouve un en-tête `EXLK` valide, il sert la ROM à banques ([§8.8](#88-le-service-avec-banques)). Les réglages délai et maintien (bloc `EXLC`) ne servent qu'aux essais.
 
-### 7.7 La carte support EPROM : même vitesse
+### 8.7 La carte support EPROM : même vitesse
 
 Sur cette carte, les lignes ne sont plus dans l'ordre : A10 est sur GP24, et il y a un trou en GP17 au milieu des données. Plutôt que de remettre les bits dans l'ordre à chaque accès, ce qui coûterait du temps, on **range l'image en RAM dans l'ordre des broches**. Tout le travail est fait une seule fois, à la copie flash → RAM (`img_load` dans `exlpins.h`).
 
@@ -387,9 +491,11 @@ Sur cette carte, les lignes ne sont plus dans l'ordre : A10 est sur GP24, et il 
 | Accès (après la détection) | `lsls`, `lsrs`, `ldrb`, `lsls`, `str`, `str` | `str`, `ldr`, `ldrh`, `lsls`, `str`, `str` |
 | Cycles | identiques | identiques |
 | Taille d'une image en RAM | 32 Ko | 64 Ko |
-| RAM utilisée (cartouche / sonde) | 69 Ko / 137 Ko | 137 Ko / 205 Ko, sur 264 Ko |
+| RAM utilisée (cartouche / sonde) | 196 Ko / 166 Ko | 198 Ko / 200 Ko, sur 264 Ko |
 
-Les adresses de signal (`$6F00+n`, `$6FFF`, `$7FFC`) sont comparées après l'accès, une fois l'index remis dans l'ordre par deux petites tables. Les ROM, les fichiers UF2, la bibliothèque et le loader sont les mêmes pour les deux cartes : seule la copie en RAM est rangée différemment.
+La RAM sert surtout à la réserve d'images des banques, partagée avec le tampon « jeu » de la bibliothèque ([§8.8](#88-le-service-avec-banques)).
+
+Les adresses de signal (`$6F00+n`, `$6FFF`, `$7FFC`, `$3FF0+n`) sont comparées après l'accès, une fois l'index remis dans l'ordre par deux petites tables. Les ROM, les fichiers UF2, la bibliothèque et le loader sont les mêmes pour les deux cartes : seule la copie en RAM est rangée différemment.
 
 La copie permutée rallonge un peu le démarrage (quelques dizaines de ms en bibliothèque) et le chargement d'un jeu (quelques ms). La console ne lit le pied qu'environ 300 ms après l'allumage, et le loader attend au moins 270 ms avant de lancer le jeu : la marge reste large.
 
@@ -410,9 +516,23 @@ Un relevé de la sonde sur EXL100, avec Exeltris en ROM unique, confirme la vite
 - **`/ROM_CS` reste à 0 environ 425 ns** par accès, comme sur la carte linéaire.
 - **La somme de l'image servie** est identique à celle de la ROM dans la flash. La copie permutée en RAM, une fois redécodée, est donc exactement la ROM.
 
+### 8.8 Le service avec banques
+
+Au démarrage, `bank_prepare()` (`exlbanks.h`) construit **une image complète de 32 Ko par banque** : la zone fixe recopiée depuis la ROM principale, la fenêtre de la banque, et le pied de la ROM principale. Changer de banque revient alors à changer le pointeur de l'image servie, exactement comme la bascule menu → jeu de la bibliothèque.
+
+La boucle `serve_banks()` a **le même chemin critique** que la boucle de la ROM unique : mêmes instructions pendant l'accès, sur les deux cartes (vérifié sur le code compilé). Le test du signal se fait **après** l'accès, bus relâché :
+
+```c
+if ((a & 0x7FF0) == 0x3FF0 && (a & 15) < nb) img = bank_img[a & 15];
+```
+
+Les images des banques viennent d'une réserve, `img_pool`, qui sert aussi de tampon « jeu » à la bibliothèque : les deux modes s'excluent. Sa taille fixe la capacité : 5 images en plus de la ROM (carte linéaire, 32 Ko par image), 2 sur la carte support EPROM (64 Ko par image), une de moins pour la sonde, dont l'oscilloscope prend de la RAM.
+
+**Validation.** Dans l'émulateur RP2040, avec le vrai firmware compilé, sur les deux cartes : banque 0 au démarrage, chaque banque après la lecture de son signal, zone fixe et pied inchangés, retour à la banque 0, banque au-delà de la capacité ignorée. Le même essai avec des fichiers UF2 produits par EXLPICO (une ROM au contenu de BANKTEST, et sa banque 1) lit bien « BONJOUR PLAGE 1 » puis « AU REVOIR PLAGE 2 » en `$4000`. La logique de BANKTEST a été vérifiée dans un simulateur TMS7020, y compris le retour à la banque 0 après un reset. L'essai sur la console reste à faire.
+
 ---
 
-## 8. La sonde (diagnostic)
+## 9. La sonde (diagnostic)
 
 Le firmware **EXLSONDE** sert la cartouche exactement comme EXLCART : mêmes ROM, même bibliothèque, même boucle. En plus, il **enregistre les accès** de la console :
 
@@ -436,6 +556,7 @@ Le firmware **EXLSONDE** sert la cartouche exactement comme EXLCART : mêmes ROM
 | `EXLLIB` | en-tête de bibliothèque (signature, version et nombre, emplacements), identifiant JEDEC de la puce flash |
 | `EXLSR` | registres d'état de la puce flash. EXLPICO signale une éventuelle protection en écriture (bits BP/CMP) |
 | `EXLMAP` | les repères du fichier de test de la flash |
+| `EXLBANKS` | nombre de banques dans la flash, nombre que cette sonde peut servir, 8 premiers octets de la banque 1 (seulement si un en-tête `EXLK` est présent) |
 | `EXLMENU` | le menu tel qu'il est dans la flash : somme, pied, point d'entrée (seulement si une bibliothèque est présente) |
 | `EXLSONDE 4 n …` | en-tête du relevé (nombre de mots, horloge, somme de l'image **servie**, réglages), puis 64 mots par accès |
 
@@ -456,7 +577,7 @@ Deux particularités à connaître pour lire un relevé :
 
 ---
 
-## 9. Dépannage
+## 10. Dépannage
 
 | Symptôme | Cause probable | Solution |
 |---|---|---|
@@ -464,6 +585,9 @@ Deux particularités à connaître pour lire un relevé :
 | Menu affiché, mais « AUCUN JEU : UTILISER EXLPICO » | le loader est installé comme ROM unique, sans bibliothèque | installer un UF2 bibliothèque |
 | Après le choix d'un jeu, le menu revient | firmware trop ancien, qui ne connaît pas le signal `$6FFF` | installer l'**UF2 bibliothèque complète** (il contient le firmware) |
 | Après le choix d'un jeu : écran rouge (EXELTEL) ou noir (EXL100), puis un reset lance le jeu | loader ancien, qui redémarre par `TRAP 0` | réassembler `exlmenu.asm` (version actuelle) et réinstaller la bibliothèque |
+| ROM à banques : « BANQUE ACTIVE : 1 » mais ligne bleue vide, octets `FF FF …` | la banque a été assemblée avec un `.org $4000` seul : obj2exl l'a posée en `$1000` | ajouter le repère `.org $1000` / `.byte $FF` au début de la banque ([§5](#5-les-rom-à-banques-plus-de-32-ko)), réassembler, refaire l'UF2 |
+| ROM à banques : la fenêtre ne change pas, ou montre `FF` | banque au-delà de la capacité, liste des banques oubliée dans le dernier UF2, ou firmware ancien | vérifier la carte **Banques** et la ligne `EXLBANKS` de la sonde ; réinstaller un **UF2 complet** |
+| ROM à banques : affichage faux après un reset | le programme lit la fenêtre sans avoir choisi sa banque | lire `$3FF0 + n` au démarrage ([§5](#5-les-rom-à-banques-plus-de-32-ko)) |
 | La bibliothèque a disparu | une ROM seule, ou le test de la flash, a été installé après elle | réinstaller la bibliothèque |
 | Le lecteur `RPI-RP2` n'apparaît pas | BOOT pas maintenu au branchement, ou câble USB « charge seule » | maintenir BOOT en branchant ; essayer un autre câble |
 | La sonde ne répond pas | pas de port série (navigateur sans Web Serial), ou Pico branché avec BOOT | utiliser Chrome ou Edge ; brancher sans BOOT et attendre 5 s |
@@ -472,9 +596,9 @@ En cas de doute, la sonde reste l'outil de référence : elle dit quel mode est 
 
 ---
 
-## 10. Limites et pistes
+## 11. Limites et pistes
 
-- **Jeux de 32 Ko au maximum**, sans changement de banque. Le RP2040 a assez de RAM (264 Ko) pour en ajouter un dans le firmware plus tard.
+- **Banques** : 6 au plus (112 Ko de ROM) sur la carte linéaire, 3 (64 Ko) sur la carte support EPROM, parce que chaque banque est une image complète en RAM. Un RP2350 (Pico 2, 520 Ko de RAM) en servirait environ deux fois plus. Pas de banques dans la bibliothèque.
 - **Lecture seule** : pas d'émulation de RAM de cartouche.
 - **190 jeux** au maximum : c'est la limite de la liste de la zone `$7000–$7EFF` et du signal `$6F00 + n`.
-- Les jeux démarrent dans l'état laissé par le menu ([§7.5](#75-démarrage-des-jeux--pourquoi-pas-trap-0)). Si un jeu en dépendait, un reset après la sélection le lance à froid.
+- Les jeux démarrent dans l'état laissé par le menu ([§8.5](#85-démarrage-des-jeux--pourquoi-pas-trap-0)). Si un jeu en dépendait, un reset après la sélection le lance à froid.
