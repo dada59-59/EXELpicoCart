@@ -72,7 +72,15 @@ int main(void) {
         for (;;) lib_poll(H);
     }
 
-    /* 5) ROM unique : reglages (bloc EXLC apres la ROM), 200 MHz, puis la boucle */
+    /* 5) ROM a banques (en-tete EXLK) : une image par banque, bascule en $3FF0+n */
+    if (bank_prepare() >= 2) {
+        set_sys_clock_khz(SYS_CLOCK_KHZ, true);
+        save_and_disable_interrupts();
+        pins_interp_init();
+        serve_banks();
+    }
+
+    /* 6) ROM unique : reglages (bloc EXLC apres la ROM), 200 MHz, puis la boucle */
     exl_cfg_t cfg = exl_read_cfg();
     set_sys_clock_khz(SYS_CLOCK_KHZ, true);
     save_and_disable_interrupts();

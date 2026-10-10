@@ -28,6 +28,13 @@
 #include "hardware/pio.h"
 #include "hardware/dma.h"
 #include "exloscillo.pio.h"
+/* reserve d'images en RAM (banques / jeu de la bibliotheque) : le releve prend
+ * deja 64 Ko, d'ou une reserve plus petite que dans EXLCART */
+#ifdef EXL_PINOUT_EPROM
+#define EXL_POOL_IMAGES 1                 /* 2 banques */
+#else
+#define EXL_POOL_IMAGES 2                 /* 3 banques */
+#endif
 #include "exlserve.h"
 #include "exllib.h"
 
@@ -99,6 +106,17 @@ static void dump_mode(void) {
                        (unsigned long)*(const uint32_t *)(XIP_BASE + probe_at[k]));
             printf("\n");
         }
+        /* ROM a banques : nombre de banques dans la flash, nombre que cette sonde
+         * peut servir, et les 8 premiers octets de la fenetre de la banque 1 */
+        {
+            const bank_hdr_t *K = (const bank_hdr_t *)(XIP_BASE + BANK_HDR_OFFSET);
+            if (K->magic == BANK_MAGIC) {
+                const uint8_t *W = (const uint8_t *)(XIP_BASE + BANK_DATA_OFFSET);
+                printf("EXLBANKS %u %u", (unsigned)K->count, (unsigned)(1u + EXL_POOL_IMAGES));
+                for (uint32_t k = 0; k < 8; k++) printf(" %02x", W[k]);
+                printf("\n");
+            }
+        }
         /* le menu tel qu'il est dans la flash (0x201000), si une bibliotheque existe */
         {
             const uint32_t *B = (const uint32_t *)(XIP_BASE + LIB_FLASH_OFFSET);
@@ -126,6 +144,7 @@ static void dump_mode(void) {
 static void core1_entry(void) {
     save_and_disable_interrupts();
     pins_interp_init();             /* interpolateur du coeur 1 (support EPROM) */
+    if (g_nbanks >= 2) serve_banks();
     exl_serve(cfg);                 /* service du bus, memes reglages qu'EXLCART */
 }
 
@@ -147,6 +166,7 @@ int main(void) {
     cfg = exl_read_cfg();
     const lib_hdr_t *LIB = lib_find();     /* bibliotheque : servie comme EXLCART */
     if (LIB) lib_prepare(LIB);
+    else bank_prepare();                    /* ROM a banques : servie comme EXLCART */
     set_sys_clock_khz(SYS_CLOCK_KHZ, true);
     multicore_launch_core1(LIB ? core1_multi : core1_entry);   /* servir au plus tot */
 

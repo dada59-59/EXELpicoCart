@@ -6,7 +6,7 @@
  *              +256 le bloc de 3840 octets recopie dans le menu en $7000-$7EFF ;
  *   0x201000 : le menu (loader), 32 Ko ;  0x209000 + n*0x8000 : le jeu n.
  * Le coeur 1 sert (serve_multi), le coeur 0 charge le jeu demande (lib_poll).
- * A n'inclure qu'une fois par firmware (definit g_req, g_ready, game[]).
+ * A n'inclure qu'une fois par firmware (definit g_req, g_ready ; game = img_pool[0]).
  */
 #ifndef EXLLIB_H
 #define EXLLIB_H
@@ -14,6 +14,7 @@
 #include "exlserve.h"
 #include "hardware/structs/timer.h"
 #include "exlmulti.h"
+#include "exlbanks.h"                             /* img_pool[] : reserve d'images en RAM */
 
 #define LIB_FLASH_OFFSET 0x00200000u
 #define LIB_MAGIC        0x424C5845u              /* "EXLB" */
@@ -24,7 +25,7 @@ typedef struct { uint32_t magic; uint16_t version, count;
                  uint32_t menu_off, game_off, stride; } lib_hdr_t;
 
 extern cell_t rom[ROM_SIZE];                      /* le menu, en mode bibliotheque */
-static cell_t game[ROM_SIZE] __attribute__((aligned(4)));
+static cell_t *const game = img_pool[0];          /* le jeu charge (reserve partagee) */
 volatile int32_t  g_req = -1;
 volatile uint32_t g_ready = 0;
 static multi_t M0;
