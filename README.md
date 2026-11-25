@@ -59,25 +59,9 @@ redevient d'origine.
 - Des sources ouvertes : le firmware en C (Pico SDK), le menu en assembleur TMS7020, et l'outil
   **EXLPICO** (une page web).
 - Une **sonde** de diagnostic, qui relève ce que la console lit vraiment, à 20 ns près.
-- Le circuit imprimé (KiCad, Gerber) et le boîtier imprimé en 3D (OpenSCAD, STL).
 
-## Ce qu'il faut
 
-| | |
-|---|---|
-| Une console | Exelvision **EXL100** ou **EXELTEL** |
-| La carte | le circuit imprimé **EXELpicoCart** ([`pcb/`](pcb/)) : Gerber prêts à envoyer au fabricant, nomenclature |
-| Le Pico | un **« Purple Pico » YD-RP2040, 16 Mo** (il sort la broche GP23, que n'a pas le Pico officiel) |
-| Les composants | prise DB9 mâle coudée, et pour le relais infrarouge : une diode IR 940 nm, un transistor NPN, trois résistances ([nomenclature](pcb/fabrication/nomenclature.csv)) |
-| Le boîtier | facultatif, à imprimer ([`boitier/`](boitier/)) |
-| Un ordinateur | Chrome ou Edge, pour l'outil EXLPICO (Windows, macOS ou Linux) |
-| Les jeux | **vos propres ROM** : aucune n'est fournie |
 
-> **Conseils de montage**
-> - Sur l'EXL100, **soudez le Pico** directement sur la carte : à travers des supports, certaines
->   consoles lisent mal le bus. Les supports marchent sur l'EXELTEL.
-> - La diode infrarouge se branche sur **GP25**. Sur GP24, elle bloque le clavier et la manette dans
->   le menu.
 
 ## Démarrage rapide
 
