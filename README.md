@@ -194,13 +194,12 @@ seule**. Les banques ne se servent qu'en ROM unique.
 | Fonction | Sur la machine |
 |---|---|
 | ROM unique, bibliothèque, retour au menu | validées, EXL100 et EXELTEL |
-| Circuit imprimé EXELpicoCart | validé : Pico soudé sur EXL100 et EXELTEL ; Pico sur supports sur EXELTEL seulement |
 | Relais infrarouge de la manette DB9 (jeux d'origine) | validé |
 | Images Exelmémoire depuis le menu, sauvegarde dans la cartouche | validées |
 | Cassettes `.k7` (PINBALL avec EXEL BASIC PLUS) | validées, EXL100 et EXELTEL |
 | ROM à banques, vidéo, musique 1 bit, version disque | validées sur EXELTEL |
 | Souris USB (Exelnoid) | fonctionne |
-| Clavier USB, manettes USB et XInput | essayés dans les émulateurs, à confirmer sur la machine |
+| Clavier USB, manettes USB et XInput | validés |
 
 ## Contenu du dépôt
 
@@ -211,9 +210,7 @@ firmware/            le firmware du Pico (C, Pico SDK) et les firmwares prêts �
 loader/              le menu (exlmenu.asm, assembleur TMS7020) et la lecture des cassettes (k7/)
 outils/              EXLPICO (exlpico.html), convertisseurs vidéo, bkp2cram.py
 exemples/            jstest (test des manettes), banques, lecteurs vidéo et disque, patchs pour vos ROM
-pcb/                 le circuit imprimé EXELpicoCart : KiCad, Gerber, nomenclature
-boitier/             le boîtier imprimé en 3D : OpenSCAD, STL
-docs/                images et planche BD de présentation (SVG, PDF)
+docs/                images )
 ```
 
 **Pour aller plus loin**, [`LISEZMOI.md`](LISEZMOI.md) détaille :
@@ -231,4 +228,4 @@ docs/                images et planche BD de présentation (SVG, PDF)
 - *Big Buck Bunny* : © Blender Foundation, licence CC BY 3.0 (voir `exemples/bigbuckbunny/CREDITS.txt`).
 - **Aucune ROM de jeu n'est fournie.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
 
-Licence du projet : *(à compléter)*.
+
