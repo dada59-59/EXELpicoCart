@@ -226,9 +226,9 @@ docs/                images )
   montage du Pico violet suit **A8PicoCart** de **Robin Edwards**.
 - Le firmware s'appuie sur le **Raspberry Pi Pico SDK** et **TinyUSB**.
 - *Big Buck Bunny* : © Blender Foundation, licence CC BY 3.0 (voir `exemples/bigbuckbunny/CREDITS.txt`).
-- **Aucune ROM de jeu n'est fournie.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
+- **Aucune ROM de jeu commercial n'est fournie.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
 
-et un grand  Merci aux valeureux partisans des systèmes obscures : 
+et **Un Grand Merci** aux valeureux partisans des systèmes obscures : 
 Jester pour le dev kit et les outils : http://dcexel.free.fr/outils/index.html 
 Les superbes sites http://dcexel.free.fr/ avec l'emulateur Exl100/Exeltel et https://www.ti99.com/exelvision/website/ 
 les membres actifs du forum : https://forum.system-cfg.com/
