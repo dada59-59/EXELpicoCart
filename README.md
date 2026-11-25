@@ -228,4 +228,7 @@ docs/                images )
 - *Big Buck Bunny* : © Blender Foundation, licence CC BY 3.0 (voir `exemples/bigbuckbunny/CREDITS.txt`).
 - **Aucune ROM de jeu n'est fournie.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
 
-
+et un grand  Merci aux valeureux partisans des systèmes obscures : 
+Jester pour le dev kit et les outils : http://dcexel.free.fr/outils/index.html 
+Les superbes sites http://dcexel.free.fr/ avec l'emulateur Exl100/Exeltel et https://www.ti99.com/exelvision/website/ 
+les membres actifs du forum : https://forum.system-cfg.com/
