@@ -1,8 +1,8 @@
 # EXELpicoCART
 
 **La cartouche à tout faire de l'Exelvision EXL100 et de l'EXELTEL**, autour d'un Raspberry Pi Pico.
-Un projet de **dada59**.
 
+(mais fait pas encore le café)
 
 
 <p align="center">
