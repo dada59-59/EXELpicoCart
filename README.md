@@ -31,8 +31,8 @@ redevient d'origine.
 **Les jeux**
 - **Bibliothèque** : jusqu'à **190 jeux** dans un menu en couleurs. On choisit aux flèches ou à la
   manette, on lance avec ENTRÉE ou le feu, et un **reset** ramène au menu.
-- **ROM unique** : la cartouche se comporte comme une cartouche classique.
-- **ROM à banques** pour les programmes de plus de 32 Ko (16 Ko fixes + banques de 16 Ko).
+- **ROM unique** : la cartouche se comporte comme une cartouche classique. Compatible avec la ROM 64k Exeltel
+- **ROM à banques** pour les nouveaux programmes de plus de 32 Ko (16 Ko fixes + banques de 16 Ko).
 
 **L'Exelmémoire et les cassettes, depuis le menu**
 - **Images Exelmémoire** (`.cram`, `.BKP`) recopiées dans l'Exelmémoire branchée sur la console, puis
@@ -226,7 +226,7 @@ docs/                images )
   montage du Pico violet suit **A8PicoCart** de **Robin Edwards**.
 - Le firmware s'appuie sur le **Raspberry Pi Pico SDK** et **TinyUSB**.
 - *Big Buck Bunny* : © Blender Foundation, licence CC BY 3.0 (voir `exemples/bigbuckbunny/CREDITS.txt`).
-- **Aucune ROM de jeu commercial n'est fournie.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
+- **Aucune ROM de jeu commercial n'est fournie ici.** Les patchs d'`exemples/` s'appliquent à vos propres ROM.
 
 et **Un Grand Merci** aux valeureux partisans des systèmes obscures : 
 Jester pour le dev kit et les outils : http://dcexel.free.fr/outils/index.html 
