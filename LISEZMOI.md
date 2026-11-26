@@ -599,7 +599,7 @@ Puis dans EXLPICO : **ROM** = `banktest.rom`, **Banques** = `bank1.rom`, **UF2 c
 
 ### 5.1 Deux images de 32 Ko
 
-Certaines cartouches d'origine font 64 Ko : deux images complètes de 32 Ko, qu'un circuit logique (74LS…) fait basculer. C'est le cas du logiciel **EXELTEL pour EXL100** (« Humeur »). Le programme recopie en RAM deux petites routines, `LDA @>7FF0 / RETS` et `LDA @>7FF8 / RETS` :
+Certaines cartouches d'origine font 64 Ko : deux images complètes de 32 Ko, qu'un circuit logique (74LS…) fait basculer. C'est le cas du logiciel **EXELTEL pour EXL100** . Le programme recopie en RAM deux petites routines, `LDA @>7FF0 / RETS` et `LDA @>7FF8 / RETS` :
 
 | Lecture | Effet |
 |---|---|
