@@ -1,0 +1,39 @@
+; exlir.pio -- emetteur infrarouge facon MC14497 (clavier / manette de l'EXL100)
+;
+; Le processeur pousse UN mot par trame : 20 "cases" de 16 periodes de porteuse,
+; bit 0 du mot = premiere case (1 = porteuse, 0 = silence). Le programme fabrique la
+; porteuse lui-meme : 36 cycles PIO par periode (16 allume, 20 eteint), soit une
+; horloge PIO de 28 437,5 x 36 = 1,02375 MHz pour la porteuse du MC14497
+; (455 kHz / 16). Le passage d'une case a la suivante (5 cycles) prend la place du
+; "nop [4]" de la boucle : TOUTES les periodes font 36 cycles, une case dure
+; exactement 16 periodes (562,6 us), la trame 11,25 ms. Entre deux trames, la
+; broche reste a 0 (diode eteinte) tant qu'aucun mot n'arrive.
+
+.program exlir
+.wrap_target
+top:
+    pull block              ; une trame
+    set x, 19               ; 20 cases
+next:
+    out y, 1                ; la case suivante      (avec le "jmp x--" : 5 cycles,
+    jmp !y, space0          ;                        comme le "nop [4]" des boucles)
+    set y, 15               ; 16 periodes allumees
+    jmp mk
+mloop:
+    nop [4]                 ; 5
+mk:
+    set pins, 1 [15]        ; 16 allume
+    set pins, 0 [13]        ; 14 eteint
+    jmp y-- mloop           ; 1     -> 36
+    jmp x-- next
+.wrap
+space0:
+    set y, 15               ; 16 periodes eteintes
+    jmp sp
+sloop:
+    nop [4]                 ; 5
+sp:
+    nop [29]                ; 30
+    jmp y-- sloop           ; 1     -> 36
+    jmp x-- next
+    jmp top

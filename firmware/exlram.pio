@@ -1,0 +1,42 @@
+; EXLRAM : reconnaissance des ECRITURES dans la zone cartouche (essai).
+; Fil volant : doigt A1 (NROMCS) -> GP26. B1 (NROMOE) = /ROM_CS = GP23 (jmp pin).
+; Mesures sur EXL100 (sonde A1) : A1 = decodage "adresse dans la zone cartouche",
+; a 0 en lecture comme en ecriture, ~750 ns par acces, et qui RESTE a 0 entre deux
+; acces consecutifs a la cartouche. Lecture : B1 a 0 de ~280 a ~670 ns apres la
+; descente de A1 (de ~470 ns apres la remontee de B1 precedente, entre deux acces
+; consecutifs). Ecriture : B1 reste a 1, la donnee est sur D0-D7 de ~380 ns a la fin
+; (~760 ns), l'adresse change vers ~720 ns.
+; Regle : un acces dans la zone (A1 a 0) sans descente de B1 est une ecriture ; on
+; prend alors un instantane de toutes les broches (adresse + donnee) vers 550 ns
+; apres le debut de l'acces, au milieu de la fenetre ou adresse ET donnee sont
+; valables (380-720 ns). Debut d'un acces : descente de A1 (pointes < 80 ns
+; ignorees), ou fin d'une lecture (remontee de B1) si A1 est encore a 0 ensuite
+; (acces consecutifs : le suivant commence ~190 ns apres la remontee de B1, sur un
+; acces de 860 ns). Deux ecritures de suite seraient prises a 865 ns d'intervalle.
+; Verifie par simulation (ramtest/sim_pio.py) sur des chronogrammes tires du releve.
+; in_base = GP26 : l'instantane arrive tourne de 26 bits (le coeur 0 le remet).
+; 200 MHz, 5 ns par cycle.
+.program ramw
+debut:
+    wait 0 gpio 26          ; A1 descend (ou est deja a 0)
+    nop [15]                ; 80 ns
+teste:
+    in pins, 1              ; A1 (bit 0 de l'ISR)
+    mov x, isr
+    mov isr, null           ; ISR vide, compteur a 0
+    jmp x--, debut          ; A1 a 1 : pointe, ou fin de zone -> attendre
+    set x, 21
+attente:                    ; 22 x 20 ns, a l'affut de B1 : instantane a ~550 ns
+    jmp pin, pas_lu         ; B1 a 1 : pas (encore) de lecture
+    wait 1 gpio 23          ; une lecture : attendre sa fin
+    nop [31]                ; 160 ns ...
+    nop [20]                ; ... + 105 ns : A1 est remonte si l'acces suivant est
+    jmp teste               ; ailleurs ; sinon instantane a ~740 ns de la remontee
+pas_lu:
+    jmp x--, attente [2]
+    in pins, 32             ; ecriture : instantane (autopush)
+    set x, 10
+fin_ecr:                    ; 295 ns : fin de l'acces d'ecriture (instantane suivant
+    jmp x--, fin_ecr [4]    ; a 860 ns si deux ecritures se suivaient)
+    nop [3]
+    jmp debut
