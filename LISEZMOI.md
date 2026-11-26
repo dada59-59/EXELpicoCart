@@ -154,7 +154,7 @@ Place dans la flash : une bibliothèque demande au moins 4 Mo ; les vidéos et l
 | Principe | fils directs, A0–A14 sur GP0–GP14, D0–D7 sur GP15–GP22 | le Pico soudé presque directement sur l'empreinte d'une 27C256, quelques lignes reroutées | carte cartouche complète, Pico violet sur supports, DB9 et émetteur IR |
 | Firmware | `exlcart` | `exlcart_eprom` | `exlcart` (le câblage linéaire) |
 | Feu de la DB9 | GP24 (aussi le bouton USR) | GP17 | GP24 |
-| État | validée | validée, du premier coup | commandée |
+| État | validée | validée, du premier coup | validée |
 
 Dans tous les cas : **/ROM_CS → GP23**, **+5 V → VBUS**, **masse → GND**. Sur la cartouche, /ROM_CS est relié à la fois à /CE et à /OE de l'EPROM. Tout est branché **en direct**, sans pont diviseur ni résistance.
 
