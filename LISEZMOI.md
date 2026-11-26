@@ -33,7 +33,7 @@ Deux câblages du Pico sont pris en charge, à la même vitesse : la carte **lin
 | Version disque lancée depuis la bibliothèque | validé | 
 | Chargement de l'Exelmémoire depuis la bibliothèque (`.cram`, `.BKP`) | v4 sur EXELTEL : copies justes, Pindo et CB5QUAD démarrent |
 | Sauvegarde de l'Exelmémoire dans le Pico, relue par EXLPICO en `.cram` / `.BKP` (v5.1) | **oui** (10/11/2026 : BURGER sauvé, relu, relancé par `CALL EXEC(32768)` dans un émulateur) |
-| Cassettes `.k7` dans la bibliothèque (EXELBASIC, EXEL BASIC PLUS) : `LOAD "1"` depuis le Pico | pas encore essayées | 
+| Cassettes `.k7` dans la bibliothèque (EXELBASIC, EXEL BASIC PLUS) : `LOAD "1"` depuis le Pico | validés | 
 
 
 ---
