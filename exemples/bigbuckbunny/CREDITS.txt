@@ -1,9 +1,0 @@
-Big Buck Bunny
-(c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
-Licence Creative Commons Attribution 3.0 (CC BY 3.0)
-https://creativecommons.org/licenses/by/3.0/
-
-Ce dossier contient la premiere minute du film, reduite a 320 x 240 et
-convertie en 8 couleurs (tramage ordonne) pour l'EXL100 par exlvideo.py :
-python3 exlvideo.py big_buck_bunny.mp4 bigbuckbunny.exv --couleur --titre "BIG BUCK BUNNY (C)BLENDER"
-(extrait source : mediaelement/mediaelement-files sur GitHub, 640 x 360, 24 images/s).
