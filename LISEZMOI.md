@@ -22,16 +22,16 @@ Deux câblages du Pico sont pris en charge, à la même vitesse : la carte **lin
 | ROM à banques (BANKTEST) | validée sur EXELTEL | 
 | Deux images de 32 Ko (cartouche EXELTEL pour EXL100) | 
 | Manette DB9 par infrarouge, jeux non modifiés | validée (carte linéaire) : Wizord d'origine, et mêmes codes que la vraie manette (`jstest`) | 
-| Clavier USB par infrarouge | pas encore essayé |
-| Manette USB (HID générique) | pas encore essayée | 
-| Manette Xbox / XInput | pas encore essayée | 
+| Clavier USB par infrarouge | validé |
+| Manette USB (HID générique) | validée | 
+| Manette Xbox / XInput | validée | 
 | Manette DB9 dans la zone d'échange | validée avec Wizord patché (carte linéaire) |
 | Souris USB | Exelnoid : fonctionne (un plantage vu une fois, non reproduit) | 
-| Vidéo, le Pico décode (Bad Apple, Big Buck Bunny) | 
+| Vidéo, le Pico décode (Bad Apple, Big Buck Bunny) | validé |
 | Musique 1 bit | validée sur EXELTEL (son par le téléviseur) |
 | Version disque seule | validée sur EXELTEL, carte support EPROM, 15 à 30 images/s |
-| Version disque lancée depuis la bibliothèque | pas encore essayée | 
-| Chargement de l'Exelmémoire depuis la bibliothèque (`.cram`, `.BKP`) | v4 sur EXELTEL : copies justes, Pindo et CB5QUAD démarrent | o
+| Version disque lancée depuis la bibliothèque | validé | 
+| Chargement de l'Exelmémoire depuis la bibliothèque (`.cram`, `.BKP`) | v4 sur EXELTEL : copies justes, Pindo et CB5QUAD démarrent |
 | Sauvegarde de l'Exelmémoire dans le Pico, relue par EXLPICO en `.cram` / `.BKP` (v5.1) | **oui** (10/11/2026 : BURGER sauvé, relu, relancé par `CALL EXEC(32768)` dans un émulateur) |
 | Cassettes `.k7` dans la bibliothèque (EXELBASIC, EXEL BASIC PLUS) : `LOAD "1"` depuis le Pico | pas encore essayées | 
 
