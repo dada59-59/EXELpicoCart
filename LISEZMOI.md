@@ -15,26 +15,26 @@ Deux câblages du Pico sont pris en charge, à la même vitesse : la carte **lin
 
 ## État
 
-| Fonction | Sur la machine | Dans les émulateurs |
-|---|---|---|
-| ROM unique | validée, EXL100 et EXELTEL, deux cartes, 19 ROM | oui |
-| Bibliothèque (menu, lancement, reset → menu) | validée, EXL100 et EXELTEL | oui |
-| ROM à banques (BANKTEST) | validée sur EXELTEL | oui |
-| Deux images de 32 Ko (cartouche EXELTEL pour EXL100) | validée sur EXL100, resets compris | logique de bascule vérifiée dans Jexel ; outil EXLPICO testé |
-| Manette DB9 par infrarouge, jeux non modifiés | validée (carte linéaire) : Wizord d'origine, et mêmes codes que la vraie manette (`jstest`) | oui |
-| Clavier USB par infrarouge | pas encore essayé | oui (codes et séquences, émulateur RP2040 et PC) |
-| Manette USB (HID générique) | pas encore essayée | oui (descripteurs de vraies manettes sur PC, trames dans l'émulateur RP2040) |
-| Manette Xbox / XInput | pas encore essayée | décodage et trames oui ; la partie USB (mise en marche, lecture) ne s'émule pas |
-| Manette DB9 dans la zone d'échange | validée avec Wizord patché (carte linéaire) | oui, tous les jeux patchés |
-| Souris USB | Exelnoid : fonctionne (un plantage vu une fois, non reproduit) | oui, Exelnoid et ExelPaint |
-| Vidéo, le Pico décode (Bad Apple, Big Buck Bunny) | validée sur EXELTEL, carte support EPROM | oui |
-| Musique 1 bit | validée sur EXELTEL (son par le téléviseur) | oui |
-| Version disque seule | validée sur EXELTEL, carte support EPROM, 15 à 30 images/s | oui |
-| Version disque lancée depuis la bibliothèque | pas encore essayée | oui, deux cartes |
-| Chargement de l'Exelmémoire depuis la bibliothèque (`.cram`, `.BKP`) | v4 sur EXELTEL : copies justes, Pindo et CB5QUAD démarrent ; v4.1 (infrarouge, « sans cartouche ») pas encore essayée | oui : jexel-debug, firmware dans rp2040js, deux cartes |
-| Sauvegarde de l'Exelmémoire dans le Pico, relue par EXLPICO en `.cram` / `.BKP` (v5.1) | **oui** (10/11/2026 : BURGER sauvé, relu, relancé par `CALL EXEC(32768)` dans un émulateur) | oui : menu dans le simulateur TMS7020, firmware dans rp2040js (deux cartes, port USB compris), EXLPICO |
-| Cassettes `.k7` dans la bibliothèque (EXELBASIC, EXEL BASIC PLUS) : `LOAD "1"` depuis le Pico | pas encore essayées | oui : routine dans jexel-debug avec les vrais BASIC (PINBALL, ANACONDA, CITE D'OR), firmware dans rp2040js (deux cartes), EXLPICO |
-| Circuit imprimé EXELpicoCart | commandé, pas encore essayé | contrôles de conception |
+| Fonction | Sur la machine |
+|---|---|
+| ROM unique | validée, EXL100 et EXELTEL, deux cartes, 19 ROM |
+| Bibliothèque (menu, lancement, reset → menu) | validée, EXL100 et EXELTEL |
+| ROM à banques (BANKTEST) | validée sur EXELTEL | 
+| Deux images de 32 Ko (cartouche EXELTEL pour EXL100) | 
+| Manette DB9 par infrarouge, jeux non modifiés | validée (carte linéaire) : Wizord d'origine, et mêmes codes que la vraie manette (`jstest`) | 
+| Clavier USB par infrarouge | pas encore essayé |
+| Manette USB (HID générique) | pas encore essayée | 
+| Manette Xbox / XInput | pas encore essayée | 
+| Manette DB9 dans la zone d'échange | validée avec Wizord patché (carte linéaire) |
+| Souris USB | Exelnoid : fonctionne (un plantage vu une fois, non reproduit) | 
+| Vidéo, le Pico décode (Bad Apple, Big Buck Bunny) | 
+| Musique 1 bit | validée sur EXELTEL (son par le téléviseur) |
+| Version disque seule | validée sur EXELTEL, carte support EPROM, 15 à 30 images/s |
+| Version disque lancée depuis la bibliothèque | pas encore essayée | 
+| Chargement de l'Exelmémoire depuis la bibliothèque (`.cram`, `.BKP`) | v4 sur EXELTEL : copies justes, Pindo et CB5QUAD démarrent | o
+| Sauvegarde de l'Exelmémoire dans le Pico, relue par EXLPICO en `.cram` / `.BKP` (v5.1) | **oui** (10/11/2026 : BURGER sauvé, relu, relancé par `CALL EXEC(32768)` dans un émulateur) |
+| Cassettes `.k7` dans la bibliothèque (EXELBASIC, EXEL BASIC PLUS) : `LOAD "1"` depuis le Pico | pas encore essayées | 
+
 
 ---
 
