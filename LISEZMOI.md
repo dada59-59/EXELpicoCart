@@ -20,7 +20,7 @@ Deux câblages du Pico sont pris en charge, à la même vitesse : la carte **lin
 | ROM unique | validée, EXL100 et EXELTEL, deux cartes, 19 ROM |
 | Bibliothèque (menu, lancement, reset → menu) | validée, EXL100 et EXELTEL |
 | ROM à banques (BANKTEST) | validée sur EXELTEL | 
-| Deux images de 32 Ko (cartouche EXELTEL pour EXL100) | validé sur EXL100 |
+| Deux images de 32 Ko (cartouche EXELTEL 64k pour EXL100) | validé sur EXL100 |
 | Manette DB9 par infrarouge, jeux non modifiés | validée (carte linéaire) : Wizord d'origine, et mêmes codes que la vraie manette (`jstest`) | 
 | Clavier USB par infrarouge | validé |
 | Manette USB (HID générique) | validée | 
