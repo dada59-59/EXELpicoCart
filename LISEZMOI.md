@@ -136,7 +136,6 @@ EXLCART/
 
 Les quatre firmwares de `firmware/uf2/` sont **ceux qui sont intégrés dans `exlpico.html`**. EXLPICO met lui-même le bon dans les fichiers qu'il fabrique, d'après la carte choisie.
 
-Les outils de vérification (émulateur RP2040, simulateur TMS7020, bancs d'essai) sont dans l'archive **EXLOUTILS**, avec leur propre LISEZMOI. Le circuit imprimé est dans l'archive **EXLCART_DB9_IR_PCB**.
 
 ---
 
